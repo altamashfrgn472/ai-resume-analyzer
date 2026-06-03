@@ -15,6 +15,7 @@ import json
 import re
 import uuid
 import traceback
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 
@@ -37,8 +38,13 @@ app.config["UPLOAD_FOLDER"] = "uploads"
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
 ALLOWED_EXTENSIONS = {"pdf", "docx"}
 
-# Set your Gemini API key here OR via environment variable
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "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")
+
+# Load environment variables from .env
+load_dotenv()
+
+print(os.getenv("GROQ_API_KEY"))
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY)
 
 # In-memory session store (use Redis/DB for production)
