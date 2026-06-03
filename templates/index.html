@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Resume Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f9fc;--bg2:#ffffff;--bg3:#f1f3f9;--bg4:#e8ecf5;
+  --border:#e2e6ef;--border2:#d0d6e8;
+  --text:#111827;--text2:#4b5563;--text3:#9ca3af;
+  --accent:#4f46e5;--accent2:#4338ca;--accent3:#818cf8;--accent-light:#eef2ff;
+  --green:#059669;--green-bg:#ecfdf5;
+  --red:#dc2626;--red-bg:#fef2f2;
+  --gold:#d97706;--gold-bg:#fffbeb;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --font:'Inter',sans-serif;--heading:'Space Grotesk',sans-serif;
+  --r:14px;--r2:8px;--r3:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow2:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -1px rgba(0,0,0,.04);
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* Layout */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:10}
+.logo{font-family:var(--heading);font-size:1.2rem;font-weight:700;color:var(--accent);letter-spacing:-.02em}
+.logo span{color:var(--text)}
+.header-sub{font-size:.75rem;color:var(--text3)}
+.container{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+
+/* Stepper */
+.stepper{display:flex;gap:0;margin-bottom:2rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.step{flex:1;padding:.75rem 1rem;display:flex;align-items:center;gap:.6rem;cursor:pointer;border-right:1px solid var(--border);transition:all .2s;font-size:.8rem;font-weight:500;color:var(--text3)}
+.step:last-child{border-right:none}
+.step:hover:not(.active){background:var(--bg3)}
+.step.active{background:var(--accent);color:#fff}
+.step.done{color:var(--green)}
+.step-num{width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0}
+.step.active .step-num{background:rgba(255,255,255,.25)}
+.step.done .step-num{background:var(--green-bg);color:var(--green)}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.card-title{font-family:var(--heading);font-size:.8rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+
+/* Upload zone */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg3)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-light)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:2.5rem;margin-bottom:.75rem}
+.upload-title{font-weight:600;font-size:.95rem;margin-bottom:.25rem}
+.upload-sub{color:var(--text3);font-size:.78rem}
+
+/* File chips */
+.file-chip{display:inline-flex;align-items:center;gap:.5rem;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:.3rem .75rem;font-size:.75rem;color:var(--text2);margin:.2rem}
+.file-chip .chip-status{font-size:.7rem}
+.file-chip button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.9rem;line-height:1;margin-left:.15rem}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.2rem;border-radius:var(--r2);border:none;cursor:pointer;font-family:var(--font);font-size:.82rem;font-weight:500;transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 1px 2px rgba(79,70,229,.3)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{background:none;border:1px solid var(--border2);color:var(--text2)}
+.btn-outline:hover{border-color:var(--accent3);color:var(--accent)}
+.btn-danger{background:none;border:1px solid #fecaca;color:var(--red);font-size:.72rem;padding:.3rem .65rem}
+.btn-danger:hover{background:var(--red-bg)}
+.btn-sm{padding:.35rem .75rem;font-size:.75rem}
+
+/* Forms */
+textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:var(--font);font-size:.83rem;padding:.75rem;resize:vertical;outline:none;transition:border .2s;line-height:1.7}
+textarea:focus{border-color:var(--accent);background:var(--bg2)}
+textarea::placeholder{color:var(--text3)}
+
+/* Tags */
+.tag{display:inline-block;padding:.18rem .55rem;border-radius:20px;font-size:.7rem;font-weight:500;margin:.12rem}
+.tag-skill{background:var(--blue-bg);color:var(--blue);border:1px solid #bfdbfe}
+.tag-found{background:var(--green-bg);color:var(--green);border:1px solid #a7f3d0}
+.tag-miss{background:var(--red-bg);color:var(--red);border:1px solid #fecaca}
+.tag-warn{background:var(--gold-bg);color:var(--gold);border:1px solid #fde68a}
+
+/* Progress bar */
+.pbar-wrap{margin-bottom:.6rem}
+.pbar-head{display:flex;justify-content:space-between;font-size:.72rem;color:var(--text3);margin-bottom:.3rem}
+.pbar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.pfill{height:100%;border-radius:3px;transition:width 1.2s ease}
+
+/* Score ring */
+.score-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.score-abs{position:absolute;text-align:center}
+.score-num{font-family:var(--heading);font-size:1.6rem;font-weight:700;line-height:1}
+.score-lbl{font-size:.6rem;color:var(--text3);margin-top:.1rem}
+
+/* Grid */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+
+/* Insights */
+.insight-row{display:flex;align-items:flex-start;gap:.65rem;padding:.5rem 0;border-bottom:1px solid var(--border)}
+.insight-row:last-child{border-bottom:none}
+.idot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.dot-g{background:var(--green)}.dot-y{background:var(--gold)}.dot-r{background:var(--red)}
+
+/* Rank cards */
+.rank-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:.75rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--shadow);transition:all .2s}
+.rank-card:hover{box-shadow:var(--shadow2);border-color:var(--border2)}
+.rank-card.rank-1{border-color:#fde68a;background:#fffdf5}
+.rnum{width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex-shrink:0}
+.rnum-1{background:#fef3c7;font-size:1rem}
+.rnum-2{background:#f1f5f9;font-size:1rem}
+.rnum-3{background:#fff7ed;font-size:1rem}
+
+/* Feedback */
+.fb-card{border:1px solid var(--border);border-radius:var(--r2);padding:.9rem;margin-bottom:.65rem;border-left:4px solid var(--accent)}
+.fb-card.priority-high{border-left-color:var(--red)}
+.fb-card.priority-medium{border-left-color:var(--gold)}
+.fb-card.priority-low{border-left-color:var(--green)}
+.fb-cat{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:.25rem}
+.fb-suggestion{font-size:.82rem;color:var(--text);margin-bottom:.3rem;font-weight:500}
+.fb-impact{font-size:.77rem;color:var(--text2)}
+
+/* Extracted data */
+.ex-field{display:grid;grid-template-columns:110px 1fr;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--border);align-items:start}
+.ex-field:last-child{border-bottom:none}
+.fk{font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;padding-top:.1rem}
+.fv{font-size:.82rem;color:var(--text);word-break:break-word}
+
+/* Resume tabs */
+.resume-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:1rem}
+.rt{padding:.3rem .7rem;border:1px solid var(--border);border-radius:20px;background:none;color:var(--text3);cursor:pointer;font-family:var(--font);font-size:.74rem;transition:all .2s;font-weight:500}
+.rt.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Loader */
+.loader{display:flex;align-items:center;gap:.5rem;color:var(--text2);font-size:.82rem;padding:1rem 0}
+.ld{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bop .8s ease-in-out infinite}
+.ld:nth-child(2){animation-delay:.15s}.ld:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+
+/* Empty state */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text3)}
+.empty-icon{font-size:3rem;margin-bottom:.75rem;opacity:.5}
+.empty-text{font-size:.875rem}
+
+/* Score method badge */
+.method-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;border-radius:20px;font-size:.68rem;font-weight:500;background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+
+/* Alert */
+.alert{padding:.75rem 1rem;border-radius:var(--r2);font-size:.82rem;margin-bottom:1rem}
+.alert-error{background:var(--red-bg);color:var(--red);border:1px solid #fecaca}
+.alert-success{background:var(--green-bg);color:var(--green);border:1px solid #a7f3d0}
+
+/* Section divider */
+.sdiv{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
+
+/* Stat mini */
+.stat-mini{background:var(--bg3);border-radius:var(--r2);padding:.75rem;text-align:center}
+.stat-n{font-family:var(--heading);font-size:1.5rem;font-weight:700}
+.stat-l{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:.1rem}
+
+@media(max-width:640px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .stepper{overflow-x:auto}
+  .container{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">AI<span>Resume</span> Analyzer</div>
+    <div class="header-sub">Python · Flask · Claude AI · scikit-learn · PyMuPDF</div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:.5rem">
+    <button class="btn btn-outline btn-sm" onclick="clearAll()">🗑 Clear All</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="step active" id="step1" onclick="switchTab(1)">
+      <div class="step-num">1</div><span>Upload & Parse</span>
+    </div>
+    <div class="step" id="step2" onclick="switchTab(2)">
+      <div class="step-num">2</div><span>JD Matching</span>
+    </div>
+    <div class="step" id="step3" onclick="switchTab(3)">
+      <div class="step-num">3</div><span>Rankings</span>
+    </div>
+    <div class="step" id="step4" onclick="switchTab(4)">
+      <div class="step-num">4</div><span>Feedback</span>
+    </div>
+  </div>
+
+  <div id="alert-area"></div>
+
+  <!-- TAB 1: Upload & Parse -->
+  <div id="tab1">
+    <div class="card">
+      <div class="card-title">Upload Resumes — PDF or DOCX</div>
+      <div class="upload-zone" id="dropzone"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event)">
+        <input type="file" id="fileInput" accept=".pdf,.docx" multiple onchange="handleFiles(event)"/>
+        <div class="upload-icon">📄</div>
+        <div class="upload-title">Drop resumes here or click to browse</div>
+        <div class="upload-sub">Supports PDF and DOCX · Multiple files allowed · Max 10MB each</div>
+      </div>
+      <div id="fileChips" style="margin-top:.9rem"></div>
+    </div>
+
+    <div id="parsedSection" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" style="margin:0">Parsed Resumes</div>
+          <button class="btn btn-primary btn-sm" onclick="switchTab(2)">Next: JD Match →</button>
+        </div>
+        <div class="resume-tabs" id="resumeTabs"></div>
+        <div id="resumeDetail"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: JD Match -->
+  <div id="tab2" style="display:none">
+    <div class="card">
+      <div class="card-title">Job Description</div>
+      <textarea id="jdInput" rows="8"
+        placeholder="Paste the full job description here — required skills, responsibilities, experience level, tech stack, qualifications..."></textarea>
+      <div style="margin-top:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <div style="font-size:.75rem;color:var(--text3)">
+          Scoring: <strong>70% Claude AI</strong> + <strong>30% TF-IDF Cosine Similarity</strong> (scikit-learn)
+        </div>
+        <button class="btn btn-primary" id="matchBtn" onclick="runMatching()" disabled>
+          🔍 Analyze Match
+        </button>
+      </div>
+    </div>
+    <div id="matchResults"></div>
+  </div>
+
+  <!-- TAB 3: Rankings -->
+  <div id="tab3" style="display:none">
+    <div id="rankContent">
+      <div class="empty">
+        <div class="empty-icon">🏆</div>
+        <div class="empty-text">Run JD matching first to see candidate rankings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Feedback -->
+  <div id="tab4" style="display:none">
+    <div id="feedbackContent">
+      <div class="empty">
+        <div class="empty-icon">💡</div>
+        <div class="empty-text">Analyze resumes to generate improvement suggestions</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const state = {
+  resumes: [],      // {id, filename, name, parsed}
+  matchResults: [], // from /api/match
+  activeResume: 0,
+  currentTab: 1
+};
+
+// ─── Tab Navigation ──────────────────────────────────────────────────────────
+function switchTab(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById('tab'+i).style.display = i===n ? 'block' : 'none';
+    const s = document.getElementById('step'+i);
+    s.classList.toggle('active', i===n);
+  });
+  state.currentTab = n;
+  if(n===2) document.getElementById('matchBtn').disabled =
+    !document.getElementById('jdInput').value.trim() || state.resumes.length===0;
+}
+
+// ─── Alert ───────────────────────────────────────────────────────────────────
+function showAlert(msg, type='error') {
+  const a = document.getElementById('alert-area');
+  a.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => a.innerHTML='', 5000);
+}
+
+// ─── File Upload ─────────────────────────────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('drag');
+  const files = Array.from(e.dataTransfer.files).filter(f =>
+    f.name.endsWith('.pdf') || f.name.endsWith('.docx'));
+  if(files.length) uploadFiles(files);
+}
+
+function handleFiles(e) {
+  uploadFiles(Array.from(e.target.files));
+  e.target.value = '';
+}
+
+async function uploadFiles(files) {
+  for(const file of files) {
+    if(state.resumes.find(r => r.filename === file.name)) {
+      showAlert(`"${file.name}" already uploaded.`); continue;
+    }
+    addChip(file.name, 'uploading');
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/upload', {method:'POST', body:formData});
+      const data = await res.json();
+      if(data.success) {
+        state.resumes.push({id: data.resume_id, filename: data.filename, name: data.parsed.name || data.filename, parsed: data.parsed});
+        updateChip(file.name, 'done');
+        renderParsedSection();
+        if(document.getElementById('matchBtn'))
+          document.getElementById('matchBtn').disabled =
+            !document.getElementById('jdInput').value.trim() || state.resumes.length===0;
+      } else {
+        updateChip(file.name, 'error');
+        showAlert(data.error || 'Upload failed');
+      }
+    } catch(err) {
+      updateChip(file.name, 'error');
+      showAlert('Network error: ' + err.message);
+    }
+  }
+}
+
+function chipId(name) { return 'chip-' + encodeURIComponent(name); }
+
+function addChip(name, status) {
+  const container = document.getElementById('fileChips');
+  const el = document.createElement('span');
+  el.className = 'file-chip'; el.id = chipId(name);
+  el.innerHTML = `📎 ${name} <span class="chip-status" id="cs-${encodeURIComponent(name)}">⏳ parsing…</span>`;
+  container.appendChild(el);
+}
+
+function updateChip(name, status) {
+  const cs = document.getElementById('cs-' + encodeURIComponent(name));
+  if(!cs) return;
+  if(status==='done') cs.innerHTML = '<span style="color:var(--green)">✓ done</span>';
+  if(status==='error') cs.innerHTML = '<span style="color:var(--red)">✗ error</span>';
+}
+
+// ─── Parsed Section ──────────────────────────────────────────────────────────
+function renderParsedSection() {
+  if(!state.resumes.length) { document.getElementById('parsedSection').style.display='none'; return; }
+  document.getElementById('parsedSection').style.display='block';
+
+  // Tabs
+  const tabsEl = document.getElementById('resumeTabs');
+  tabsEl.innerHTML = state.resumes.map((r,i) =>
+    `<button class="rt ${i===state.activeResume?'active':''}" onclick="setResTab(${i})">${r.name}</button>`
+  ).join('');
+
+  renderResumeDetail();
+}
+
+function setResTab(i) { state.activeResume = i; renderParsedSection(); }
+
+function renderResumeDetail() {
+  const r = state.resumes[state.activeResume];
+  if(!r) return;
+  const p = r.parsed;
+  const fields = [['Name',p.name],['Email',p.email],['Phone',p.phone],['Location',p.location],['Title',p.title],['Experience',p.totalExperience]].filter(f=>f[1]);
+  const skills = (p.topSkills||p.skills||[]).slice(0,10).map(s=>`<span class="tag tag-skill">${s}</span>`).join('');
+  const edu = (p.education||[]).slice(0,3).map(e => `<div style="font-size:.8rem;color:var(--text2);margin-bottom:.2rem">${typeof e==='string'?e:[e.degree,e.institution,e.year].filter(Boolean).join(' · ')}</div>`).join('');
+  const exp = (p.experience||[]).slice(0,3).map(e => `<div style="font-size:.8rem;color:var(--text2);margin-bottom:.3rem;padding-bottom:.3rem;border-bottom:1px solid var(--border)">${typeof e==='string'?e:[e.role,e.company,e.duration].filter(Boolean).join(' — ')}</div>`).join('');
+  const proj = (p.projects||[]).slice(0,3).map(pr => `<div style="font-size:.8rem;color:var(--text2);margin-bottom:.2rem">▹ ${typeof pr==='string'?pr:pr.name||JSON.stringify(pr)}</div>`).join('');
+
+  document.getElementById('resumeDetail').innerHTML = `
+  <div class="grid2">
+    <div>
+      <div class="card-title">Extracted Data</div>
+      ${fields.map(([k,v])=>`<div class="ex-field"><span class="fk">${k}</span><span class="fv">${v}</span></div>`).join('')}
+    </div>
+    <div>
+      <div class="card-title">Summary</div>
+      <p style="font-size:.8rem;color:var(--text2);line-height:1.8">${p.summary||'—'}</p>
+      ${(p.strengths||[]).length ? `
+      <div style="margin-top:1rem">
+        <div class="card-title">Key Strengths</div>
+        ${p.strengths.map(s=>`<div style="font-size:.8rem;color:var(--green);margin-bottom:.2rem">✦ ${s}</div>`).join('')}
+      </div>` : ''}
+    </div>
+  </div>
+  ${skills ? `<hr class="sdiv"><div class="card-title">Top Skills</div>${skills}` : ''}
+  ${edu ? `<hr class="sdiv"><div class="card-title">Education</div>${edu}` : ''}
+  ${exp ? `<hr class="sdiv"><div class="card-title">Experience</div>${exp}` : ''}
+  ${proj ? `<hr class="sdiv"><div class="card-title">Projects</div>${proj}` : ''}
+  <div style="margin-top:1rem;display:flex;justify-content:flex-end">
+    <button class="btn btn-danger" onclick="removeResume('${r.id}')">Remove Resume</button>
+  </div>`;
+}
+
+async function removeResume(id) {
+  state.resumes = state.resumes.filter(r => r.id !== id);
+  state.activeResume = Math.max(0, state.activeResume - 1);
+  renderParsedSection();
+}
+
+// ─── JD Matching ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('jdInput').addEventListener('input', () => {
+    const btn = document.getElementById('matchBtn');
+    if(btn) btn.disabled = !document.getElementById('jdInput').value.trim() || state.resumes.length===0;
+  });
+});
+
+async function runMatching() {
+  const jd = document.getElementById('jdInput').value.trim();
+  if(!jd || !state.resumes.length) return;
+  const btn = document.getElementById('matchBtn');
+  btn.disabled = true; btn.textContent = '⏳ Analyzing…';
+  document.getElementById('matchResults').innerHTML = `<div class="loader"><div class="ld"></div><div class="ld"></div><div class="ld"></div><span>Running AI + ML match analysis…</span></div>`;
+
+  try {
+    const res = await fetch('/api/match', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({jd_text: jd, resume_ids: state.resumes.map(r=>r.id)})
+    });
+    const data = await res.json();
+    if(data.success) {
+      state.matchResults = data.results;
+      renderMatchResults();
+      renderRankings();
+      await fetchAllFeedback();
+    } else {
+      showAlert(data.error || 'Matching failed');
+    }
+  } catch(err) {
+    showAlert('Error: ' + err.message);
+  }
+  btn.disabled = false; btn.innerHTML = '🔄 Re-analyze';
+}
+
+function scoreColor(s) {
+  if(s>=85) return '#059669';
+  if(s>=70) return '#2563eb';
+  if(s>=55) return '#d97706';
+  if(s>=40) return '#ea580c';
+  return '#dc2626';
+}
+
+function renderMatchResults() {
+  if(!state.matchResults.length) return;
+  let html = '';
+  state.matchResults.forEach(r => {
+    const c = scoreColor(r.finalScore||r.aiMatchScore);
+    const circ = 2*Math.PI*36;
+    const off = circ * (1 - (r.finalScore||r.aiMatchScore)/100);
+    html += `
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;gap:1.25rem;margin-bottom:1.25rem">
+        <div class="score-wrap" style="width:84px;height:84px">
+          <svg width="84" height="84" viewBox="0 0 84 84">
+            <circle cx="42" cy="42" r="36" fill="none" stroke="#f1f3f9" stroke-width="7"/>
+            <circle cx="42" cy="42" r="36" fill="none" stroke="${c}" stroke-width="7"
+              stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+              stroke-linecap="round" transform="rotate(-90 42 42)"/>
+          </svg>
+          <div class="score-abs">
+            <div class="score-num" style="color:${c}">${r.finalScore||r.aiMatchScore}</div>
+            <div class="score-lbl">/ 100</div>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:1rem;font-weight:600;font-family:'Space Grotesk',sans-serif;margin-bottom:.3rem">${r.name}</div>
+          <span style="font-size:.72rem;padding:.2rem .6rem;border-radius:20px;background:${c}18;color:${c};border:1px solid ${c}40">${r.matchLevel}</span>
+          <p style="font-size:.82rem;color:var(--text2);margin-top:.6rem;line-height:1.7">${r.overallFit}</p>
+          <div style="margin-top:.5rem;display:flex;gap:.4rem;flex-wrap:wrap">
+            <span class="method-badge">🤖 AI: ${r.aiMatchScore}</span>
+            <span class="method-badge">📊 TF-IDF: ${r.tfidfScore}</span>
+            <span class="method-badge">⚡ Final: ${r.finalScore}</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid3" style="margin-bottom:1rem">
+        ${[['Skills',r.skillsMatch],['Experience',r.experienceMatch],['Education',r.educationMatch]].map(([l,v])=>`
+        <div class="pbar-wrap">
+          <div class="pbar-head"><span>${l}</span><span style="color:${scoreColor(v)};font-weight:600">${v}%</span></div>
+          <div class="pbar"><div class="pfill" style="width:${v}%;background:${scoreColor(v)}"></div></div>
+        </div>`).join('')}
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="card-title">Matched Skills</div>
+          ${(r.matchedSkills||[]).map(s=>`<span class="tag tag-found">✓ ${s}</span>`).join('')||'<span style="font-size:.78rem;color:var(--text3)">None identified</span>'}
+        </div>
+        <div>
+          <div class="card-title">Missing Skills</div>
+          ${(r.missingSkills||[]).map(s=>`<span class="tag tag-miss">✗ ${s}</span>`).join('')||'<span style="font-size:.78rem;color:var(--text3)">None identified</span>'}
+        </div>
+      </div>
+      ${(r.keyInsights||[]).length ? `
+      <hr class="sdiv">
+      <div class="card-title">Key Insights</div>
+      ${r.keyInsights.map(i=>`
+      <div class="insight-row">
+        <div class="idot ${i.type==='positive'?'dot-g':i.type==='warning'?'dot-y':'dot-r'}"></div>
+        <span style="font-size:.8rem;color:var(--text2)">${i.text}</span>
+      </div>`).join('')}` : ''}
+    </div>`;
+  });
+  document.getElementById('matchResults').innerHTML = html;
+}
+
+// ─── Rankings ────────────────────────────────────────────────────────────────
+function renderRankings() {
+  if(!state.matchResults.length) return;
+  const sorted = [...state.matchResults].sort((a,b)=>(b.finalScore||0)-(a.finalScore||0));
+  const medals = ['🥇','🥈','🥉'];
+  const rnums = ['rnum-1','rnum-2','rnum-3'];
+
+  let html = `
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">Candidate Leaderboard</div>
+    <div class="grid3">
+      <div class="stat-mini"><div class="stat-n">${sorted.length}</div><div class="stat-l">Candidates</div></div>
+      <div class="stat-mini"><div class="stat-n" style="color:var(--green)">${sorted[0]?.finalScore||0}</div><div class="stat-l">Top Score</div></div>
+      <div class="stat-mini"><div class="stat-n">${sorted.length>0?Math.round(sorted.reduce((a,r)=>a+(r.finalScore||0),0)/sorted.length):0}</div><div class="stat-l">Avg Score</div></div>
+    </div>
+  </div>`;
+
+  sorted.forEach((r,i) => {
+    const c = scoreColor(r.finalScore||0);
+    html += `
+    <div class="rank-card ${i===0?'rank-1':''}">
+      <div class="rnum ${rnums[i]||''}">${medals[i]||'#'+(i+1)}</div>
+      <div style="flex:1">
+        <div style="font-size:.9rem;font-weight:600">${r.name}</div>
+        <div style="font-size:.72rem;color:var(--text3);margin-top:.1rem">${r.matchLevel} · ${(r.matchedSkills||[]).length} skills matched</div>
+        <div class="pbar" style="margin-top:.4rem;max-width:220px"><div class="pfill" style="width:${r.finalScore||0}%;background:${c}"></div></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:${c}">${r.finalScore||0}</div>
+        <div style="font-size:.62rem;color:var(--text3)">final score</div>
+      </div>
+    </div>`;
+  });
+
+  if(sorted.length > 1) {
+    html += `
+    <div class="card" style="border-color:#fde68a;background:#fffdf5;margin-top:.75rem">
+      <div class="card-title" style="color:var(--gold)">⭐ Top Recommendation</div>
+      <p style="font-size:.85rem;color:var(--text2)">
+        <strong style="color:var(--text)">${sorted[0].name}</strong> ranked #1 with a final score of 
+        <strong>${sorted[0].finalScore}/100</strong>. ${sorted[0].overallFit}
+      </p>
+    </div>`;
+  }
+  document.getElementById('rankContent').innerHTML = html;
+}
+
+// ─── Feedback ────────────────────────────────────────────────────────────────
+async function fetchAllFeedback() {
+  document.getElementById('feedbackContent').innerHTML = `<div class="loader"><div class="ld"></div><div class="ld"></div><div class="ld"></div><span>Generating improvement suggestions…</span></div>`;
+  let html = '';
+  for(const resume of state.resumes) {
+    try {
+      const res = await fetch('/api/feedback', {
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({resume_id:resume.id})
+      });
+      const data = await res.json();
+      if(data.success) {
+        const pc = {high:'var(--red)',medium:'var(--gold)',low:'var(--green)'};
+        html += `<div class="card">
+          <div class="card-header">
+            <div class="card-title" style="margin:0">💡 ${resume.name}</div>
+          </div>
+          ${data.feedback.map(f=>`
+          <div class="fb-card priority-${f.priority}">
+            <div class="fb-cat">${f.category} <span style="color:${pc[f.priority]||'var(--text3)'}">● ${f.priority} priority</span></div>
+            <div class="fb-suggestion">${f.suggestion}</div>
+            ${f.impact?`<div class="fb-impact">💡 Impact: ${f.impact}</div>`:''}
+          </div>`).join('')}
+        </div>`;
+      }
+    } catch(err) { console.error(err); }
+  }
+  document.getElementById('feedbackContent').innerHTML = html || '<div class="empty"><div class="empty-text">Could not generate feedback</div></div>';
+}
+
+// ─── Clear ───────────────────────────────────────────────────────────────────
+async function clearAll() {
+  if(!confirm('Clear all uploaded resumes?')) return;
+  await fetch('/api/clear', {method:'POST'});
+  state.resumes = []; state.matchResults = []; state.activeResume = 0;
+  document.getElementById('fileChips').innerHTML = '';
+  document.getElementById('parsedSection').style.display = 'none';
+  document.getElementById('matchResults').innerHTML = '';
+  document.getElementById('rankContent').innerHTML = '<div class="empty"><div class="empty-icon">🏆</div><div class="empty-text">Run JD matching first</div></div>';
+  document.getElementById('feedbackContent').innerHTML = '<div class="empty"><div class="empty-icon">💡</div><div class="empty-text">Analyze resumes to generate suggestions</div></div>';
+  document.getElementById('jdInput').value = '';
+  switchTab(1);
+  showAlert('All resumes cleared.', 'success');
+}
+</script>
+</body>
+</html>
