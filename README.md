@@ -27,7 +27,7 @@ An AI-powered resume analyzer built with **Python**, **Flask**, **Groq AI (LLaMA
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/ai-resume-analyzer.git
+git clone https://github.com/altamashfrgn472/ai-resume-analyzer.git
 cd ai-resume-analyzer
 ```
 
@@ -47,14 +47,25 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Run the application
+### 4. Set up your API key
+
+The app uses **Groq API** for AI features. The API key is stored in a `.env` file which is **not pushed to GitHub** for security reasons.
+
+Create a `.env` file in the root of the project:
+```
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+Get your free Groq API key at: **https://console.groq.com**
+
+> The app loads the key automatically using `python-dotenv` — no hardcoded secrets in the codebase.
+
+### 5. Run the application
 ```bash
 python app.py
 ```
 
 Open your browser at: **http://127.0.0.1:5000**
-
-> **Note:** The API key is already configured in `app.py` and the app runs out of the box.
 
 ## How to Use
 
@@ -74,6 +85,7 @@ ai-resume-analyzer/
 │   └── index.html      # Frontend UI
 ├── uploads/            # Temporary file storage (gitignored)
 ├── requirements.txt    # Python dependencies
+├── .env                # API key — NOT pushed to GitHub (gitignored)
 ├── .gitignore
 └── README.md
 ```

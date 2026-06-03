@@ -42,7 +42,6 @@ ALLOWED_EXTENSIONS = {"pdf", "docx"}
 # Load environment variables from .env
 load_dotenv()
 
-print(os.getenv("GROQ_API_KEY"))
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY)
