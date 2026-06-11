@@ -1,15 +1,3 @@
-"""
-AI Resume Analyzer
-==================
-Tech Stack:
-- Python 3.x + Flask (backend web framework)
-- PyMuPDF (fitz) — PDF parsing
-- python-docx — DOCX parsing
-- scikit-learn — TF-IDF vectorization & cosine similarity scoring
-- Google Gemini API — AI-powered extraction, insights, feedback
-- HTML/CSS/JS — Frontend UI
-"""
-
 import os
 import json
 import re
@@ -31,7 +19,7 @@ import numpy as np
 # Google Gemini API
 from groq import Groq
 
-# ─── Config ────────────────────────────────────────────────────────────────────
+# ─── Config ──────────
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = "uploads"
@@ -49,7 +37,7 @@ client = Groq(api_key=GROQ_API_KEY)
 # In-memory session store (use Redis/DB for production)
 session_store = {}
 
-# ─── Helpers ───────────────────────────────────────────────────────────────────
+# ─── Helpers ─────────────────
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -242,7 +230,7 @@ Return only JSON array, no markdown."""
     return json.loads(raw)
 
 
-# ─── Routes ────────────────────────────────────────────────────────────────────
+# ─── Routes ──────────────
 
 @app.route("/")
 def index():
@@ -395,7 +383,7 @@ def clear_session():
     return jsonify({"success": True})
 
 
-# ─── Run ───────────────────────────────────────────────────────────────────────
+# ─── Run ──────────────
 
 if __name__ == "__main__":
     os.makedirs("uploads", exist_ok=True)

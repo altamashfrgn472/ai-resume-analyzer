@@ -268,7 +268,7 @@ textarea::placeholder{color:var(--text3)}
 </div>
 
 <script>
-// ─── State ───────────────────────────────────────────────────────────────────
+// ─── State ─────────────────
 const state = {
   resumes: [],      // {id, filename, name, parsed}
   matchResults: [], // from /api/match
@@ -276,7 +276,7 @@ const state = {
   currentTab: 1
 };
 
-// ─── Tab Navigation ──────────────────────────────────────────────────────────
+// ─── Tab Navigation ───────────────
 function switchTab(n) {
   [1,2,3,4].forEach(i => {
     document.getElementById('tab'+i).style.display = i===n ? 'block' : 'none';
@@ -288,14 +288,14 @@ function switchTab(n) {
     !document.getElementById('jdInput').value.trim() || state.resumes.length===0;
 }
 
-// ─── Alert ───────────────────────────────────────────────────────────────────
+// ─── Alert ─────────────────────────
 function showAlert(msg, type='error') {
   const a = document.getElementById('alert-area');
   a.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
   setTimeout(() => a.innerHTML='', 5000);
 }
 
-// ─── File Upload ─────────────────────────────────────────────────────────────
+// ─── File Upload ──────────────────
 function handleDrop(e) {
   e.preventDefault();
   document.getElementById('dropzone').classList.remove('drag');
@@ -355,7 +355,7 @@ function updateChip(name, status) {
   if(status==='error') cs.innerHTML = '<span style="color:var(--red)">✗ error</span>';
 }
 
-// ─── Parsed Section ──────────────────────────────────────────────────────────
+// ─── Parsed Section ────────────────
 function renderParsedSection() {
   if(!state.resumes.length) { document.getElementById('parsedSection').style.display='none'; return; }
   document.getElementById('parsedSection').style.display='block';
@@ -412,7 +412,7 @@ async function removeResume(id) {
   renderParsedSection();
 }
 
-// ─── JD Matching ─────────────────────────────────────────────────────────────
+// ─── JD Matching ─────────────
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('jdInput').addEventListener('input', () => {
     const btn = document.getElementById('matchBtn');
@@ -519,7 +519,7 @@ function renderMatchResults() {
   document.getElementById('matchResults').innerHTML = html;
 }
 
-// ─── Rankings ────────────────────────────────────────────────────────────────
+// ─── Rankings ─────────────
 function renderRankings() {
   if(!state.matchResults.length) return;
   const sorted = [...state.matchResults].sort((a,b)=>(b.finalScore||0)-(a.finalScore||0));
@@ -566,7 +566,7 @@ function renderRankings() {
   document.getElementById('rankContent').innerHTML = html;
 }
 
-// ─── Feedback ────────────────────────────────────────────────────────────────
+// ─── Feedback ────────────────
 async function fetchAllFeedback() {
   document.getElementById('feedbackContent').innerHTML = `<div class="loader"><div class="ld"></div><div class="ld"></div><div class="ld"></div><span>Generating improvement suggestions…</span></div>`;
   let html = '';
@@ -596,7 +596,7 @@ async function fetchAllFeedback() {
   document.getElementById('feedbackContent').innerHTML = html || '<div class="empty"><div class="empty-text">Could not generate feedback</div></div>';
 }
 
-// ─── Clear ───────────────────────────────────────────────────────────────────
+// ─── Clear ────────────
 async function clearAll() {
   if(!confirm('Clear all uploaded resumes?')) return;
   await fetch('/api/clear', {method:'POST'});
